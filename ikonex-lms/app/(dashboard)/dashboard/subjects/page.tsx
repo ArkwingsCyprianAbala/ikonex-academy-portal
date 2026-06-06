@@ -7,18 +7,19 @@ import { toast } from 'sonner'
 import SubjectFormDialog from '@/components/shared/SubjectFormDialog'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import EmptyState from '@/components/shared/EmptyState'
+import PageHeader from '@/components/shared/PageHeader'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
+import { subjectColorPalette } from '@/lib/grade-colors'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import {
-  BookOpen, Plus, Search,
-  Pencil, Trash2, Eye, Loader2
-} from 'lucide-react'
+import { BookOpen, Plus, Search, Pencil, Trash2, Eye } from 'lucide-react'
 import Link from 'next/link'
 import type { Subject } from '@/lib/hooks/useSubjects'
 
 export default function SubjectsPage() {
-  const { subjects, loading, createSubject, updateSubject, deleteSubject } = useSubjects()
+  const { subjects, loading, createSubject, updateSubject, deleteSubject } =
+    useSubjects()
   const { streams } = useStreams()
 
   const [search, setSearch] = useState('')
@@ -26,142 +27,139 @@ export default function SubjectsPage() {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
 
-  const filtered = subjects.filter(s =>
+  const filtered = subjects.filter((s) =>
     `${s.name} ${s.code}`.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleCreate = async (data: { name: string; code: string; streamIds?: string[] }) => {
+  const handleCreate = async (data: {
+    name: string
+    code: string
+    streamIds?: string[]
+  }) => {
     await createSubject(data)
-
     toast.success(`${data.name} has been added`)
   }
 
-  const handleUpdate = async (data: { name: string; code: string; streamIds?: string[] }) => {
+  const handleUpdate = async (data: {
+    name: string
+    code: string
+    streamIds?: string[]
+  }) => {
     if (!editingSubject) return
     await updateSubject(editingSubject.id, data)
-
     toast.success(`${data.name} has been updated`)
   }
 
   const handleDelete = async () => {
     if (!deletingSubject) return
     await deleteSubject(deletingSubject.id)
-
     toast.error(`${deletingSubject.name} has been removed`)
   }
 
-  const subjectColors = [
-    'bg-blue-100 text-blue-700',
-    'bg-purple-100 text-purple-700',
-    'bg-green-100 text-green-700',
-    'bg-orange-100 text-orange-700',
-    'bg-pink-100 text-pink-700',
-    'bg-teal-100 text-teal-700',
-  ]
-
   return (
     <div className="space-y-6">
-
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Subjects</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {subjects.length} subject{subjects.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-
-        <Button onClick={() => { setEditingSubject(null); setFormOpen(true) }}>
+      <PageHeader
+        title="Subjects"
+        description={`${subjects.length} subject${subjects.length !== 1 ? 's' : ''} in curriculum`}
+      >
+        <Button
+          onClick={() => {
+            setEditingSubject(null)
+            setFormOpen(true)
+          }}
+        >
           <Plus size={16} className="mr-2" />
           Add Subject
         </Button>
-      </div>
+      </PageHeader>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className="relative max-w-md">
+        <Search
+          size={15}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <Input
           placeholder="Search subjects..."
-          className="pl-9"
+          className="pl-9 h-10"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-blue-500" />
-        </div>
+        <LoadingSpinner label="Loading subjects..." />
       ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={BookOpen}
-          title={search ? 'No subjects found' : 'No subjects yet'}
-          description="Add your first subject to get started"
-          actionLabel="Add Subject"
-          onAction={() => setFormOpen(true)}
-        />
+        <Card>
+          <EmptyState
+            icon={BookOpen}
+            title={search ? 'No subjects found' : 'No subjects yet'}
+            description="Add your first subject to get started"
+            actionLabel="Add Subject"
+            onAction={() => setFormOpen(true)}
+          />
+        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((subject, index) => {
-            const colorClass = subjectColors[index % subjectColors.length]
+            const colorClass =
+              subjectColorPalette[index % subjectColorPalette.length]
 
             return (
-              <div
-                key={subject.id}
-                className="bg-white rounded-xl border p-5 shadow-sm"
-              >
-
-                {/* Header */}
+              <Card key={subject.id} className="p-5">
                 <div className="flex gap-3 mb-4">
-                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center font-bold ${colorClass}`}>
+                  <div
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${colorClass}`}
+                  >
                     {subject.code.slice(0, 3)}
                   </div>
-
-                  <div>
-                    <h3 className="font-semibold text-slate-800">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">
                       {subject.name}
                     </h3>
-                    <p className="text-xs text-slate-400">{subject.code}</p>
+                    <p className="text-xs text-muted-foreground">{subject.code}</p>
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2">
-                  <Link href={`/dashboard/subjects/${subject.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full">
-                      <Eye size={14} className="mr-1" />
+                  <Link
+                    href={`/dashboard/subjects/${subject.id}`}
+                    className="flex-1"
+                  >
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Eye size={14} className="mr-1.5" />
                       View
                     </Button>
                   </Link>
-
                   <Button
                     variant="outline"
-                    onClick={() => { setEditingSubject(subject); setFormOpen(true) }}
+                    size="sm"
+                    onClick={() => {
+                      setEditingSubject(subject)
+                      setFormOpen(true)
+                    }}
                   >
                     <Pencil size={14} />
                   </Button>
-
                   <Button
                     variant="outline"
-                    className="text-red-500"
+                    size="sm"
                     onClick={() => setDeletingSubject(subject)}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={14} className="text-destructive" />
                   </Button>
                 </div>
-
-              </div>
+              </Card>
             )
           })}
         </div>
       )}
 
-      {/* Dialogs */}
       <SubjectFormDialog
         open={formOpen}
-        onClose={() => { setFormOpen(false); setEditingSubject(null) }}
+        onClose={() => {
+          setFormOpen(false)
+          setEditingSubject(null)
+        }}
         onSubmit={editingSubject ? handleUpdate : handleCreate}
         editingSubject={editingSubject}
         streams={streams}

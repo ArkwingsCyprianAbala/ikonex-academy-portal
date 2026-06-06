@@ -5,6 +5,12 @@ import { useStreams } from '@/lib/hooks/useStreams'
 import { useResults } from '@/lib/hooks/useResults'
 import { toast } from 'sonner'
 import EmptyState from '@/components/shared/EmptyState'
+import PageHeader from '@/components/shared/PageHeader'
+import AvatarInitials from '@/components/shared/AvatarInitials'
+import GradeBadge from '@/components/shared/GradeBadge'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
+import { getPositionStyle } from '@/lib/grade-colors'
+import { Card, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -45,21 +51,6 @@ export default function ResultsPage() {
   }
 }
 
-  const gradeColor: Record<string, string> = {
-    A: 'bg-green-100 text-green-700 border-green-200',
-    B: 'bg-blue-100 text-blue-700 border-blue-200',
-    C: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    D: 'bg-orange-100 text-orange-700 border-orange-200',
-    F: 'bg-red-100 text-red-700 border-red-200',
-  }
-
-  const positionStyle = (pos: number) => {
-    if (pos === 1) return 'bg-yellow-400 text-white'
-    if (pos === 2) return 'bg-slate-400 text-white'
-    if (pos === 3) return 'bg-amber-600 text-white'
-    return 'bg-slate-100 text-slate-600'
-  }
-
   const selectedStream = streams.find(s => s.id === selectedStreamId)
 
   // Summary stats from results
@@ -76,21 +67,12 @@ export default function ResultsPage() {
   return (
     <div className="space-y-6">
 
-      {/* Page Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">Results</h2>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Process and view student rankings per class stream
-          </p>
-        </div>
-
+      <PageHeader
+        title="Results"
+        description="Process and view student rankings per class stream"
+      >
         {selectedStreamId && (
-          <Button
-            onClick={handleProcess}
-            disabled={processing}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
+          <Button onClick={handleProcess} disabled={processing}>
             {processing ? (
               <><Loader2 size={15} className="mr-2 animate-spin" /> Processing...</>
             ) : (
@@ -98,15 +80,14 @@ export default function ResultsPage() {
             )}
           </Button>
         )}
-      </div>
+      </PageHeader>
 
-      {/* Stream Selector */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <p className="text-sm font-semibold text-slate-700 mb-3">
+      <Card className="p-5">
+        <p className="text-sm font-semibold text-foreground mb-3">
           Select Class Stream
         </p>
         <Select value={selectedStreamId} onValueChange={setSelectedStreamId}>
-          <SelectTrigger className="max-w-xs">
+          <SelectTrigger className="max-w-xs h-10">
             <SelectValue placeholder="Select a stream..." />
           </SelectTrigger>
           <SelectContent>
@@ -115,29 +96,24 @@ export default function ResultsPage() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </Card>
 
-      {/* No stream selected */}
       {!selectedStreamId && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <Card>
           <EmptyState
             icon={BarChart3}
             title="Select a stream to view results"
             description="Choose a class stream above then click Process Results to calculate rankings."
           />
-        </div>
+        </Card>
       )}
 
-      {/* Loading */}
       {selectedStreamId && loading && (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 size={28} className="animate-spin text-blue-500" />
-        </div>
+        <LoadingSpinner label="Loading results..." />
       )}
 
-      {/* No results yet */}
       {selectedStreamId && !loading && results.length === 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <Card>
           <EmptyState
             icon={Trophy}
             title="No results processed yet"
@@ -145,64 +121,35 @@ export default function ResultsPage() {
             actionLabel="Process Results Now"
             onAction={handleProcess}
           />
-        </div>
+        </Card>
       )}
 
-      {/* Results Content */}
       {selectedStreamId && !loading && results.length > 0 && (
         <div className="space-y-4">
-
-          {/* Summary Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-              <div className="flex items-center gap-2 text-slate-500 mb-2">
-                <Users size={15} />
-                <span className="text-xs font-medium">Total Students</span>
-              </div>
-              <p className="text-2xl font-bold text-slate-800">{results.length}</p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-              <div className="flex items-center gap-2 text-slate-500 mb-2">
-                <TrendingUp size={15} />
-                <span className="text-xs font-medium">Class Average</span>
-              </div>
-              <p className="text-2xl font-bold text-slate-800">
-                {avgScore.toFixed(1)}%
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-              <div className="flex items-center gap-2 text-slate-500 mb-2">
-                <Star size={15} />
-                <span className="text-xs font-medium">Highest Score</span>
-              </div>
-              <p className="text-2xl font-bold text-slate-800">
-                {highestScore.toFixed(1)}%
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-              <div className="flex items-center gap-2 text-slate-500 mb-2">
-                <Trophy size={15} />
-                <span className="text-xs font-medium">Students Passing</span>
-              </div>
-              <p className="text-2xl font-bold text-slate-800">
-                {passCount}
-                <span className="text-sm font-normal text-slate-400 ml-1">
-                  / {results.length}
-                </span>
-              </p>
-            </div>
+            {[
+              { icon: Users, label: 'Total Students', value: results.length },
+              { icon: TrendingUp, label: 'Class Average', value: `${avgScore.toFixed(1)}%` },
+              { icon: Star, label: 'Highest Score', value: `${highestScore.toFixed(1)}%` },
+              { icon: Trophy, label: 'Students Passing', value: `${passCount} / ${results.length}` },
+            ].map((stat) => (
+              <Card key={stat.label} className="p-4">
+                <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                  <stat.icon size={15} />
+                  <span className="text-xs font-medium">{stat.label}</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+              </Card>
+            ))}
           </div>
 
-          {/* Rankings Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-
-            {/* Table Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <Card className="overflow-hidden hidden lg:block">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <div>
-                <h3 className="font-semibold text-slate-800">
+                <h3 className="font-semibold text-foreground">
                   {selectedStream?.name} — Class Rankings
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Click a row to expand subject breakdown
                 </p>
               </div>
@@ -214,7 +161,7 @@ export default function ResultsPage() {
             </div>
 
             {/* Column Headers */}
-            <div className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 bg-slate-50 border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <div className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-3 bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               <span className="w-8 text-center">#</span>
               <span>Student</span>
               <span className="text-center">Total</span>
@@ -225,21 +172,20 @@ export default function ResultsPage() {
             </div>
 
             {/* Result Rows */}
-            <div className="divide-y divide-slate-50">
+            <div className="divide-y divide-border">
               {results.map(result => {
                 const isExpanded = expandedStudent === result.student.id
 
                 return (
                   <div key={result.id}>
-                    {/* Main Row */}
                     <div
-                      className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-slate-50 transition-colors cursor-pointer"
+                      className="grid grid-cols-[auto_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 items-center hover:bg-muted/30 transition-colors cursor-pointer"
                       onClick={() => setExpandedStudent(
                         isExpanded ? null : result.student.id
                       )}
                     >
                       {/* Position Badge */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${positionStyle(result.classPosition)}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${getPositionStyle(result.classPosition)}`}>
                         {result.classPosition === 1 ? '🥇' :
                          result.classPosition === 2 ? '🥈' :
                          result.classPosition === 3 ? '🥉' :
@@ -248,38 +194,33 @@ export default function ResultsPage() {
 
                       {/* Student Info */}
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">
-                          {result.student.firstName[0]}{result.student.lastName[0]}
-                        </div>
+                        <AvatarInitials
+                          initials={`${result.student.firstName[0]}${result.student.lastName[0]}`}
+                          size="sm"
+                        />
                         <div>
-                          <p className="text-sm font-medium text-slate-800">
+                          <p className="text-sm font-medium text-foreground">
                             {result.student.firstName} {result.student.lastName}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-muted-foreground">
                             {result.student.studentNumber}
                           </p>
                         </div>
                       </div>
 
-                      {/* Total Marks */}
-                      <p className="text-center text-sm font-bold text-slate-800">
+                      <p className="text-center text-sm font-bold text-foreground">
                         {result.totalMarks.toFixed(1)}
                       </p>
 
-                      {/* Average */}
-                      <p className="text-center text-sm text-slate-700">
+                      <p className="text-center text-sm text-foreground">
                         {result.averageScore.toFixed(1)}%
                       </p>
 
-                      {/* Grade */}
                       <div className="flex justify-center">
-                        <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${gradeColor[result.grade] ?? ''}`}>
-                          {result.grade}
-                        </span>
+                        <GradeBadge grade={result.grade} />
                       </div>
 
-                      {/* Subject Count */}
-                      <p className="text-center text-sm text-slate-500">
+                      <p className="text-center text-sm text-muted-foreground">
                         {result.student.scores.length}
                       </p>
 
@@ -294,8 +235,8 @@ export default function ResultsPage() {
 
                     {/* Expanded Subject Breakdown */}
                     {isExpanded && (
-                      <div className="px-6 pb-4 bg-slate-50 border-t border-slate-100">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide py-3">
+                      <div className="px-6 pb-4 bg-muted/30 border-t border-border">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide py-3">
                           Subject Breakdown
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -309,23 +250,21 @@ export default function ResultsPage() {
                             return (
                               <div
                                 key={score.id}
-                                className="bg-white rounded-lg border border-slate-200 px-4 py-3 flex items-center justify-between"
+                                className="bg-card rounded-lg border border-border px-4 py-3 flex items-center justify-between"
                               >
                                 <div>
-                                  <p className="text-sm font-medium text-slate-800">
+                                  <p className="text-sm font-medium text-foreground">
                                     {score.subject.name}
                                   </p>
-                                  <p className="text-xs text-slate-400">
+                                  <p className="text-xs text-muted-foreground">
                                     Exam: {score.examScore} · CA: {score.caScore}
                                   </p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-sm font-bold text-slate-800">
+                                  <p className="text-sm font-bold text-foreground">
                                     {score.total}
                                   </p>
-                                  <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${gradeColor[subjectGrade]}`}>
-                                    {subjectGrade}
-                                  </span>
+                                  <GradeBadge grade={subjectGrade} className="mt-1" />
                                 </div>
                               </div>
                             )
@@ -333,8 +272,8 @@ export default function ResultsPage() {
                         </div>
 
                         {/* Row Summary */}
-                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-200">
-                          <span className="text-xs text-slate-500">
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                          <span className="text-xs text-muted-foreground">
                             {result.student.scores.length} subjects recorded
                           </span>
                           <Link href={`/dashboard/students/${result.student.id}`}>
@@ -351,23 +290,42 @@ export default function ResultsPage() {
             </div>
 
             {/* Table Footer */}
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-              <p className="text-xs text-slate-400">
+            <CardFooter className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
                 {results.length} student{results.length !== 1 ? 's' : ''} ranked
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 {['A', 'B', 'C', 'D', 'F'].map(g => (
                   <div key={g} className="flex items-center gap-1">
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded border ${gradeColor[g]}`}>
-                      {g}
-                    </span>
-                    <span className="text-xs text-slate-400">
+                    <GradeBadge grade={g} />
+                    <span className="text-xs text-muted-foreground">
                       {results.filter(r => r.grade === g).length}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </CardFooter>
+          </Card>
+
+          {/* Mobile rankings */}
+          <div className="lg:hidden space-y-3">
+            {results.map(result => (
+              <Card key={result.id} className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${getPositionStyle(result.classPosition)}`}>
+                    {result.classPosition <= 3 ? ['🥇','🥈','🥉'][result.classPosition - 1] : result.classPosition}
+                  </div>
+                  <AvatarInitials initials={`${result.student.firstName[0]}${result.student.lastName[0]}`} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">
+                      {result.student.firstName} {result.student.lastName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{result.averageScore.toFixed(1)}% avg</p>
+                  </div>
+                  <GradeBadge grade={result.grade} />
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}

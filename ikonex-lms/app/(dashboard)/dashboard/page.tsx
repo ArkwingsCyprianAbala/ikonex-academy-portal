@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import StatCard from '@/components/shared/StatCard'
-import { Users, School, BookOpen, BarChart3 } from 'lucide-react'
+import AvatarInitials from '@/components/shared/AvatarInitials'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Users, School, BookOpen, BarChart3, ArrowRight, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -15,21 +17,30 @@ export default async function DashboardPage() {
   const recentStudents = await prisma.student.findMany({
     take: 5,
     orderBy: { createdAt: 'desc' },
-    include: { classStream: true }
+    include: { classStream: true },
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-bold">Welcome back! 👋</h2>
-        <p className="text-blue-100 text-sm mt-1">
-          Have a look at what is happening at Ikonex Academy today.
-        </p>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-violet-600 p-6 sm:p-8 text-white shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-1/2 w-48 h-48 bg-white/5 rounded-full translate-y-1/2" />
+        <div className="relative">
+          <div className="flex items-center gap-2 text-primary-foreground/80 text-sm font-medium mb-2">
+            <Sparkles size={16} />
+            <span>Good to see you</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold">Welcome back!</h2>
+          <p className="text-primary-foreground/80 text-sm mt-2 max-w-lg leading-relaxed">
+            Here&apos;s what&apos;s happening at Ikonex Academy today. Track students,
+            manage assessments, and monitor performance all in one place.
+          </p>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Total Students"
           value={studentCount}
@@ -61,44 +72,51 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Students */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h3 className="font-semibold text-slate-800">Recently Registered Students</h3>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recently Registered Students</CardTitle>
           <Link
             href="/dashboard/students"
-            className="text-sm text-blue-600 hover:underline"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 font-medium transition-colors"
           >
-            View all →
+            View all
+            <ArrowRight size={14} />
           </Link>
-        </div>
+        </CardHeader>
 
         {recentStudents.length === 0 ? (
-          <div className="px-6 py-10 text-center text-slate-400 text-sm">
-            No students registered yet.
-          </div>
+          <CardContent>
+            <p className="text-center text-muted-foreground text-sm py-8">
+              No students registered yet. Add your first student to get started.
+            </p>
+          </CardContent>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-border">
             {recentStudents.map((student) => (
-              <div key={student.id} className="flex items-center gap-4 px-6 py-3">
-                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
-                  {student.firstName[0]}{student.lastName[0]}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-800">
+              <Link
+                key={student.id}
+                href={`/dashboard/students/${student.id}`}
+                className="flex items-center gap-4 px-5 sm:px-6 py-3.5 hover:bg-muted/40 transition-colors"
+              >
+                <AvatarInitials
+                  initials={`${student.firstName[0]}${student.lastName[0]}`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {student.firstName} {student.lastName}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-muted-foreground truncate">
                     {student.studentNumber} · {student.classStream.name}
                   </p>
                 </div>
-                <span className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-medium">
-                  {student.gender}
+                <span className="text-xs bg-accent text-accent-foreground px-2.5 py-1 rounded-full font-medium shrink-0">
+                  {student.gender === 'MALE' ? 'Male' : 'Female'}
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

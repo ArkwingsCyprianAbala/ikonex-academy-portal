@@ -5,7 +5,10 @@ import { useParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, User, BookOpen, BarChart3 } from 'lucide-react'
+import GradeBadge from '@/components/shared/GradeBadge'
+import LoadingSpinner from '@/components/shared/LoadingSpinner'
+import { Card, CardHeader, CardTitle } from '@/components/ui/card'
+import { ArrowLeft, User, BookOpen, BarChart3 } from 'lucide-react'
 
 interface Score {
   id: string
@@ -47,142 +50,143 @@ export default function StudentDetailPage() {
       .finally(() => setLoading(false))
   }, [id, router])
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 size={28} className="animate-spin text-blue-500" />
-    </div>
-  )
-
+  if (loading) return <LoadingSpinner label="Loading student profile..." />
   if (!student) return null
 
   const result = student.results?.[0]
 
-  const gradeColor: Record<string, string> = {
-    A: 'bg-green-100 text-green-700',
-    B: 'bg-blue-100 text-blue-700',
-    C: 'bg-yellow-100 text-yellow-700',
-    D: 'bg-orange-100 text-orange-700',
-    F: 'bg-red-100 text-red-700',
-  }
-
   return (
     <div className="space-y-6">
-      {/* Back & Title */}
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <Button variant="outline" size="sm" onClick={() => router.back()} className="w-fit">
           <ArrowLeft size={15} className="mr-1.5" /> Back
         </Button>
         <div>
-          <h2 className="text-xl font-bold text-slate-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
             {student.firstName} {student.lastName}
           </h2>
-          <p className="text-sm text-slate-500">{student.studentNumber}</p>
+          <p className="text-sm text-muted-foreground">{student.studentNumber}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Card */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <Card className="p-6">
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-2xl font-bold mb-3">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-violet-500 text-white flex items-center justify-center text-2xl font-bold mb-3 shadow-lg shadow-primary/20 ring-4 ring-primary/10">
               {student.firstName[0]}{student.lastName[0]}
             </div>
-            <h3 className="font-semibold text-slate-800">
+            <h3 className="font-semibold text-foreground">
               {student.firstName} {student.lastName}
             </h3>
-            <p className="text-sm text-slate-400">{student.studentNumber}</p>
+            <p className="text-sm text-muted-foreground">{student.studentNumber}</p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-1">
             {[
-              { label: 'Stream', value: student.classStream.name, icon: User },
-              { label: 'Gender', value: student.gender, icon: User },
+              { label: 'Stream', value: student.classStream.name },
+              { label: 'Gender', value: student.gender === 'MALE' ? 'Male' : 'Female' },
               {
                 label: 'Date of Birth',
                 value: new Date(student.dateOfBirth).toLocaleDateString('en-GB', {
-                  day: '2-digit', month: 'long', year: 'numeric'
+                  day: '2-digit', month: 'long', year: 'numeric',
                 }),
-                icon: User
               },
             ].map(item => (
-              <div key={item.label} className="flex justify-between items-center py-2 border-b border-slate-50">
-                <span className="text-xs text-slate-400 font-medium">{item.label}</span>
-                <span className="text-sm text-slate-700 font-medium">{item.value}</span>
+              <div key={item.label} className="flex justify-between items-center py-2.5 border-b border-border last:border-0">
+                <span className="text-xs text-muted-foreground font-medium">{item.label}</span>
+                <span className="text-sm text-foreground font-medium">{item.value}</span>
               </div>
             ))}
           </div>
 
-          {/* Result Summary */}
           {result && (
-            <div className="mt-4 bg-slate-50 rounded-lg p-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            <div className="mt-5 bg-muted/50 rounded-xl p-4 space-y-2.5 ring-1 ring-border/50">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                 Performance Summary
               </p>
               <div className="flex justify-between">
-                <span className="text-xs text-slate-500">Total Marks</span>
-                <span className="text-sm font-bold text-slate-800">{result.totalMarks}</span>
+                <span className="text-xs text-muted-foreground">Total Marks</span>
+                <span className="text-sm font-bold text-foreground">{result.totalMarks}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-xs text-slate-500">Average</span>
-                <span className="text-sm font-bold text-slate-800">{result.averageScore.toFixed(1)}%</span>
+                <span className="text-xs text-muted-foreground">Average</span>
+                <span className="text-sm font-bold text-foreground">{result.averageScore.toFixed(1)}%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500">Grade</span>
-                <span className={`text-sm font-bold px-2 py-0.5 rounded ${gradeColor[result.grade] ?? ''}`}>
-                  {result.grade}
-                </span>
+                <span className="text-xs text-muted-foreground">Grade</span>
+                <GradeBadge grade={result.grade} />
               </div>
               <div className="flex justify-between">
-                <span className="text-xs text-slate-500">Class Position</span>
-                <span className="text-sm font-bold text-slate-800">#{result.classPosition}</span>
+                <span className="text-xs text-muted-foreground">Class Position</span>
+                <span className="text-sm font-bold text-foreground">#{result.classPosition}</span>
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* Scores Table */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
-            <BookOpen size={17} className="text-blue-600" />
-            <h3 className="font-semibold text-slate-800">Subject Scores</h3>
+        <Card className="lg:col-span-2 overflow-hidden">
+          <CardHeader className="gap-2">
+            <div className="flex items-center gap-2">
+              <BookOpen size={17} className="text-primary" />
+              <CardTitle>Subject Scores</CardTitle>
+            </div>
             <Badge variant="secondary">{student.scores.length} subjects</Badge>
-          </div>
+          </CardHeader>
 
           {student.scores.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <BarChart3 size={28} className="text-slate-300 mb-3" />
-              <p className="text-sm text-slate-400">No scores recorded yet.</p>
+              <BarChart3 size={28} className="text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground">No scores recorded yet.</p>
             </div>
           ) : (
             <>
-              {/* Header */}
-              <div className="grid grid-cols-4 gap-4 px-6 py-3 bg-slate-50 border-b text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <div className="hidden sm:grid grid-cols-4 gap-4 px-6 py-3 bg-muted/50 border-y border-border text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 <span>Subject</span>
                 <span className="text-center">Exam (70)</span>
                 <span className="text-center">CA (30)</span>
                 <span className="text-center">Total (100)</span>
               </div>
 
-              <div className="divide-y divide-slate-50">
+              <div className="divide-y divide-border">
                 {student.scores.map(score => (
-                  <div key={score.id} className="grid grid-cols-4 gap-4 px-6 py-3 items-center">
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">{score.subject.name}</p>
-                      <p className="text-xs text-slate-400">{score.subject.code}</p>
+                  <div key={score.id}>
+                    <div className="hidden sm:grid grid-cols-4 gap-4 px-6 py-3 items-center">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{score.subject.name}</p>
+                        <p className="text-xs text-muted-foreground">{score.subject.code}</p>
+                      </div>
+                      <p className="text-center text-sm text-foreground">{score.examScore}</p>
+                      <p className="text-center text-sm text-foreground">{score.caScore}</p>
+                      <p className={`text-center text-sm font-bold ${
+                        score.total >= 50 ? 'text-emerald-600' : 'text-destructive'
+                      }`}>
+                        {score.total}
+                      </p>
                     </div>
-                    <p className="text-center text-sm text-slate-700">{score.examScore}</p>
-                    <p className="text-center text-sm text-slate-700">{score.caScore}</p>
-                    <p className={`text-center text-sm font-bold ${
-                      score.total >= 50 ? 'text-green-600' : 'text-red-500'
-                    }`}>
-                      {score.total}
-                    </p>
+
+                    <div className="sm:hidden px-4 py-3 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{score.subject.name}</p>
+                          <p className="text-xs text-muted-foreground">{score.subject.code}</p>
+                        </div>
+                        <p className={`text-sm font-bold ${
+                          score.total >= 50 ? 'text-emerald-600' : 'text-destructive'
+                        }`}>
+                          {score.total}
+                        </p>
+                      </div>
+                      <div className="flex gap-4 text-xs text-muted-foreground">
+                        <span>Exam: {score.examScore}</span>
+                        <span>CA: {score.caScore}</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             </>
           )}
-        </div>
+        </Card>
       </div>
     </div>
   )
