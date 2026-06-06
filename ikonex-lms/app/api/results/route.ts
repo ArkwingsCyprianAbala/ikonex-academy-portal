@@ -10,6 +10,11 @@ function calculateGrade(average: number): string {
   return 'F'
 }
 
+type StudentWithScores = {
+  id: string
+  scores: { total: number }[]
+}
+
 // POST /api/results — process results for an entire stream
 export async function POST(req: NextRequest) {
   try {
@@ -29,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate totals and averages for each student
-    const studentResults = students.map(student => {
+    const studentResults = students.map((student: StudentWithScores) => {
       const totalMarks = student.scores.reduce((sum, s) => sum + s.total, 0)
       const averageScore = student.scores.length > 0
         ? totalMarks / student.scores.length
