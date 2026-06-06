@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ClassStream {
+  id        String   @id @default(cuid())
+  name      String   @unique  // e.g., "Form 1A"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  students       Student[]
+  streamSubjects StreamSubject[]
+}
+
+model Student {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  studentNumber String   @unique
+  gender        Gender
+  dateOfBirth   DateTime
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  classStreamId String
+  classStream   ClassStream @relation(fields: [classStreamId], references: [id])
+
+  scores  Score[]
+  results Result[]
+}
+
+model Subject {
+  id        String   @id @default(cuid())
+  name      String   @unique  // e.g., "Mathematics"
+  code      String   @unique  // e.g., "MATH101"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  streamSubjects StreamSubject[]
+  scores         Score[]
+}
+
+// Join table — links Subjects to ClassStreams
+model StreamSubject {
+  id       String @id @default(cuid())
+
+  streamId  String
+  subjectId String
+
+  classStream ClassStream @relation(fields: [streamId], references: [id])
+  subject     Subject     @relation(fields: [subjectId], references: [id])
+
+  @@unique([streamId, subjectId]) // Prevents duplicate assignments
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  examScore Float    // Out of 70
+  caScore   Float    // Continuous Assessment — out of 30
+  total     Float    // Computed: examScore + caScore
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentId String
+  subjectId String
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, subjectId]) // Prevents duplicate score submissions
+}
+
+model Result {
+  id            String   @id @default(cuid())
+  totalMarks    Float    // Sum of all subject totals
+  averageScore  Float    // totalMarks / number of subjects
+  grade         String   // A, B, C, D, F
+  classPosition Int      // Rank within their stream
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  studentId String @unique
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
