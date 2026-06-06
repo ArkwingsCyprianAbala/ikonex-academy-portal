@@ -24,6 +24,15 @@ interface FormData {
   classStreamId: string
 }
 
+interface FormErrors {
+  firstName?: string
+  lastName?: string
+  studentNumber?: string
+  gender?: string
+  dateOfBirth?: string
+  classStreamId?: string
+}
+
 interface Props {
   open: boolean
   onClose: () => void
@@ -45,7 +54,7 @@ export default function StudentFormDialog({
   open, onClose, onSubmit, editingStudent, streams
 }: Props) {
   const [form, setForm] = useState<FormData>(defaultForm)
-  const [errors, setErrors] = useState<Partial<FormData>>({})
+  const [errors, setErrors] = useState<FormErrors>({})
   const [loading, setLoading] = useState(false)
   const [serverError, setServerError] = useState('')
 
@@ -67,7 +76,7 @@ export default function StudentFormDialog({
   }, [editingStudent, open])
 
   const validate = (): boolean => {
-    const newErrors: Partial<FormData> = {}
+    const newErrors: FormErrors = {}
     if (!form.firstName.trim()) newErrors.firstName = 'First name is required'
     if (!form.lastName.trim()) newErrors.lastName = 'Last name is required'
     if (!form.studentNumber.trim()) newErrors.studentNumber = 'Student number is required'

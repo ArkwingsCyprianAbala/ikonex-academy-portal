@@ -5,6 +5,7 @@ export interface ClassStream {
   id: string
   name: string
   createdAt: string
+  updatedAt: string
   _count?: {
     students: number
     streamSubjects: number

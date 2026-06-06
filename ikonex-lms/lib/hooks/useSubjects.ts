@@ -6,8 +6,16 @@ export interface Subject {
   name: string
   code: string
   createdAt: string
+  updatedAt: string
   _count?: { streamSubjects: number }
-  streamSubjects?: { classStream: { id: string; name: string } }[]
+  streamSubjects?: {
+    classStream: {
+      id: string
+      name: string
+      createdAt: string
+      updatedAt: string
+    }
+  }[]
 }
 
 export function useSubjects() {
