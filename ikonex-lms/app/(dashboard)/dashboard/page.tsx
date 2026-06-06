@@ -5,6 +5,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Users, School, BookOpen, BarChart3, ArrowRight, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
+type RecentStudent = {
+  id: string
+  firstName: string
+  lastName: string
+  studentNumber: string
+  gender: string
+  classStream: { id: string; name: string }
+}
+
 export default async function DashboardPage() {
   const [studentCount, streamCount, subjectCount, resultCount] =
     await Promise.all([
@@ -92,7 +101,7 @@ export default async function DashboardPage() {
           </CardContent>
         ) : (
           <div className="divide-y divide-border">
-            {recentStudents.map((student) => (
+            {recentStudents.map((student: RecentStudent) => (
               <Link
                 key={student.id}
                 href={`/dashboard/students/${student.id}`}
