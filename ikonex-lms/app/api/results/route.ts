@@ -15,6 +15,13 @@ type StudentWithScores = {
   scores: { total: number }[]
 }
 
+type StudentResult = {
+  studentId: string
+  totalMarks: number
+  averageScore: number
+  grade: string
+}
+
 // POST /api/results — process results for an entire stream
 export async function POST(req: NextRequest) {
   try {
@@ -34,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate totals and averages for each student
-    const studentResults = students.map((student: StudentWithScores) => {
+    const studentResults: StudentResult[] = students.map((student: StudentWithScores) => {
       const totalMarks = student.scores.reduce((sum, s) => sum + s.total, 0)
       const averageScore = student.scores.length > 0
         ? totalMarks / student.scores.length
@@ -44,10 +51,10 @@ export async function POST(req: NextRequest) {
     })
 
     // Sort by totalMarks descending to assign positions
-    studentResults.sort((a, b) => b.totalMarks - a.totalMarks)
+    studentResults.sort((a: StudentResult, b: StudentResult) => b.totalMarks - a.totalMarks)
 
     // Upsert results with class positions
-    const upsertPromises = studentResults.map((result, index) =>
+    const upsertPromises = studentResults.map((result: StudentResult, index: number) =>
       prisma.result.upsert({
         where: { studentId: result.studentId },
         update: {
