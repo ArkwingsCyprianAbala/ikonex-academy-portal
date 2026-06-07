@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Users, School, BookOpen, BarChart3, ArrowRight, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 type RecentStudent = {
   id: string
   firstName: string
