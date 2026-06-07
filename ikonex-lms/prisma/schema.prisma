@@ -5,11 +5,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model ClassStream {
   id        String   @id @default(cuid())
-  name      String   @unique  // e.g., "Form 1A"
+  name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -36,8 +37,8 @@ model Student {
 
 model Subject {
   id        String   @id @default(cuid())
-  name      String   @unique  // e.g., "Mathematics"
-  code      String   @unique  // e.g., "MATH101"
+  name      String   @unique
+  code      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,24 +46,22 @@ model Subject {
   scores         Score[]
 }
 
-// Join table — links Subjects to ClassStreams
 model StreamSubject {
-  id       String @id @default(cuid())
-
+  id        String @id @default(cuid())
   streamId  String
   subjectId String
 
   classStream ClassStream @relation(fields: [streamId], references: [id])
   subject     Subject     @relation(fields: [subjectId], references: [id])
 
-  @@unique([streamId, subjectId]) // Prevents duplicate assignments
+  @@unique([streamId, subjectId])
 }
 
 model Score {
   id        String   @id @default(cuid())
-  examScore Float    // Out of 70
-  caScore   Float    // Continuous Assessment — out of 30
-  total     Float    // Computed: examScore + caScore
+  examScore Float
+  caScore   Float
+  total     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -72,19 +71,19 @@ model Score {
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, subjectId]) // Prevents duplicate score submissions
+  @@unique([studentId, subjectId])
 }
 
 model Result {
-  id            String   @id @default(cuid())
-  totalMarks    Float    // Sum of all subject totals
-  averageScore  Float    // totalMarks / number of subjects
-  grade         String   // A, B, C, D, F
-  classPosition Int      // Rank within their stream
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  totalMarks   Float
+  averageScore Float
+  grade        String
+  classPosition Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  studentId String @unique
+  studentId String  @unique
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
