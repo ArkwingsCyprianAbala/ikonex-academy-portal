@@ -6,7 +6,7 @@ A full-stack web-based Student Management System built for **Ikonex Academy** as
 
 ## 🌐 Live Demo
 
-> **Hosted URL:** `https://ikonex-academy-portal-nudx7hhv1.vercel.app`
+> **Hosted URL:** `https://ikonex-academy-portal.vercel.app/dashboard`
 > **Repository:** `https://github.com/ArkwingsCyprianAbala/ikonex-academy-portal`
 
 ---
